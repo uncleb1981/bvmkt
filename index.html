@@ -706,6 +706,22 @@ const CATALOG = [
   {id:"aloeset",       name:"Aloe Vera Set (3 pots)",           emoji:"🌵",  market:22,  desc:"Healthy. Perfect for sunburns, which you will get hiking in July. Take care of them."},
   {id:"hydroherbs",    name:"Hydroponic Herb Garden Kit",       emoji:"🌱",  market:42,  desc:"Like new. LED grow light, 6 pods. Fresh basil forever. Or until you go on vacation."},
   {id:"ceramicplanters",name:"Large Ceramic Planters (pair)",   emoji:"🪴",  market:38,  desc:"Good condition. 18\" diameter, neutral gray. Flanked my front door for a year. Classy."},
+
+  // ── Big Ticket ──
+  {id:"peloton",       name:"Peloton Bike+",                   emoji:"🚴",  market:850, desc:"Good condition. Touchscreen, all original accessories. My resolution lasted 3 months. Yours can last longer."},
+  {id:"ooni",          name:"Ooni Koda 16 Pizza Oven",         emoji:"🍕",  market:350, desc:"Good condition. Propane, reaches 950°F, cover included. Turned me into a pizza snob. No apologies."},
+  {id:"dji_air",       name:"DJI Air 3 Drone (full kit)",      emoji:"🚁",  market:750, desc:"Like new. 4K/60fps, 46-min flight time, RC-N2 remote, 3 extra batteries. NWA from above is stunning."},
+  {id:"macbook",       name:"MacBook Air M2 (8GB/256GB)",      emoji:"💻",  market:700, desc:"Good condition. Space Gray, charger included. Upgrading to M3. Battery health 91%. Fast as ever."},
+  {id:"ps5",           name:"PlayStation 5 + 2 Controllers",   emoji:"🎮",  market:380, desc:"Good condition. Disc edition, two DualSense controllers. Kids moved to PC gaming. Your turn."},
+  {id:"traeger",       name:"Traeger Pro 780 Pellet Grill",    emoji:"🔥",  market:450, desc:"Good condition. WiFi-enabled, 780 sq in cook space. Cover included. Smoked a brisket that changed lives."},
+  {id:"hottub",        name:"Inflatable Hot Tub (4-person)",   emoji:"🛁",  market:400, desc:"Good condition. 140 jets, heats to 104°F. Perfect for NWA winters after a trail ride."},
+  {id:"generator",     name:"Dual Fuel Generator (7500W)",     emoji:"⚡",  market:480, desc:"Good condition. Runs on gas or propane. Ice storm backup. Saved us twice. Very NWA essential."},
+  {id:"roadebike",     name:"Trek Road E-Bike (Dual Sport+)",  emoji:"⚡",  market:1800,desc:"Good condition. Bosch motor, 60-mile range. Upgraded to a newer model. Razorback Greenway ready."},
+  {id:"campertrailer", name:"Pop-Up Camper Trailer (2019)",    emoji:"🏕️",  market:4500,desc:"Good condition. Sleeps 6, A/C, propane stove, awning. Lake Leatherwood's VIP parking spot awaits."},
+  {id:"ridingmower",   name:"Riding Lawn Mower (42\" deck)",   emoji:"🚜",  market:650, desc:"Good condition. Gas, 18HP, mulch kit included. Zero-turn? No. Gets it done? Absolutely."},
+  {id:"watchapple",    name:"Apple Watch Ultra 2",              emoji:"⌚",  market:600, desc:"Like new. Titanium, 60hr battery, all bands. Way more watch than my fitness level requires."},
+  {id:"subwoofer",     name:"Sonos Sub + Arc Soundbar",        emoji:"🔊",  market:900, desc:"Like new. Full surround sound set. Mounting hardware included. Your neighbors will notice."},
+  {id:"standupjet",    name:"Jet Ski (2018 Sea-Doo Spark)",    emoji:"🌊",  market:5500,desc:"Good condition. 90HP, recent service, cover included. Beaver Lake summer is a different lifestyle."},
 ];
 
 const BUYER_NAMES = [
@@ -805,8 +821,8 @@ function resolveOffer(listingPrice, marketValue, rejectCount) {
 
 function newGame() {
   return {
-    cash: 200,
-    weekStartCash: 200,
+    cash: 500,
+    weekStartCash: 500,
     inventory: [],
     sold: [],
     cycle: 1,
@@ -982,9 +998,9 @@ function render() {
   if (state.game_over) {
     document.getElementById('game-over-screen').classList.add('show');
     document.getElementById('final-cash').textContent = '$' + state.cash;
-    const profit = state.cash - 200;
+    const profit = state.cash - 500;
     const el = document.getElementById('final-profit');
-    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit + ' from your $200 start';
+    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit + ' from your $500 start';
     el.className = 'final-profit ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
     showGameOver(state.cash);
     return;
@@ -1047,12 +1063,10 @@ function renderInventory() {
         : '';
       actionHtml = `
         <div class="price-row">
-          <input type="number" id="price-${item.inv_id}" placeholder="Your price" min="1" step="1"
-            oninput="updateProfitPreview('${item.inv_id}', ${item.paid})">
+          <input type="number" id="price-${item.inv_id}" placeholder="Your price" min="1" step="1">
           <button class="btn btn-sell" style="width:auto;padding:9px 14px" onclick="listItem('${item.inv_id}')">List</button>
         </div>
         <div class="market-hint" style="margin-top:4px">Paid $${item.paid}</div>
-        <div class="profit-preview" id="preview-${item.inv_id}"></div>
         ${rejectWarning}`;
     }
 
