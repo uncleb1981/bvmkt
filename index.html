@@ -580,20 +580,30 @@ function newGame() {
   };
 }
 
-// ── Leaderboard (localStorage) ────────────────────────────────────────────
-const SCORES_KEY = 'bvmkt_scores_v1';
+// ── Leaderboard (Firebase Realtime Database) ─────────────────────────────
+// 👇 Paste your Firebase Realtime Database URL here (no trailing slash)
+// e.g. "https://your-project-default-rtdb.firebaseio.com"
+const FIREBASE_URL = 'https://bvmkt-900db-default-rtdb.firebaseio.com';
 
-function loadScores() {
-  try { return JSON.parse(localStorage.getItem(SCORES_KEY)) || []; }
-  catch(e) { return []; }
+async function loadScores() {
+  try {
+    const r = await fetch(`${FIREBASE_URL}/scores.json`);
+    const data = await r.json();
+    if (!data) return [];
+    return Object.values(data);
+  } catch(e) { return []; }
 }
 
-function saveScores(scores) {
-  localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
+async function saveScore(name, score, avg_stars) {
+  await fetch(`${FIREBASE_URL}/scores.json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, score, avg_stars, ts: Date.now() }),
+  });
 }
 
-function qualifiesForLeaderboard(score) {
-  const scores = loadScores();
+async function qualifiesForLeaderboard(score) {
+  const scores = await loadScores();
   if (scores.length < 10) return true;
   return score > Math.min(...scores.map(s => s.score));
 }
@@ -874,21 +884,18 @@ function showTab(name, btn) {
 let finalScore = 0;
 let finalAvgStars = 0;
 
-function showGameOver(cash) {
+async function showGameOver(cash) {
   finalScore = cash;
   const soldWithStars = state.sold.filter(i => i.offer && i.offer.stars);
   finalAvgStars = soldWithStars.length
     ? Math.round(soldWithStars.reduce((sum, i) => sum + i.offer.stars, 0) / soldWithStars.length * 10) / 10
     : 0;
 
-  const scores = loadScores();
+  const scores = await loadScores();
   renderLeaderboard(scores, null);
 
-  if (qualifiesForLeaderboard(cash)) {
-    document.getElementById('name-entry-wrap').style.display = 'block';
-  } else {
-    document.getElementById('name-entry-wrap').style.display = 'none';
-  }
+  const qualifies = await qualifiesForLeaderboard(cash);
+  document.getElementById('name-entry-wrap').style.display = qualifies ? 'block' : 'none';
 }
 
 function renderLeaderboard(scores, highlightName) {
@@ -911,15 +918,12 @@ function renderLeaderboard(scores, highlightName) {
   }).join('');
 }
 
-function submitScore() {
+async function submitScore() {
   const name = document.getElementById('player-name').value.trim();
   if (!name) return;
   document.getElementById('name-entry-wrap').style.display = 'none';
-  const scores = loadScores();
-  scores.push({ name, score: finalScore, avg_stars: finalAvgStars });
-  scores.sort((a, b) => b.score - a.score);
-  if (scores.length > 10) scores.splice(10);
-  saveScores(scores);
+  await saveScore(name, finalScore, finalAvgStars);
+  const scores = await loadScores();
   renderLeaderboard(scores, name);
 }
 
