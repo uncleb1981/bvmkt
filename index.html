@@ -337,8 +337,7 @@
     Week <span id="cycle-num">1</span> of 4
     <span class="cycle-dots" id="cycle-dots"></span>
   </div>
-  <div style="font-size:11px;color:#aaa;padding:2px 14px 2px;letter-spacing:0.2px">Make the most $ buying and selling on marketplace in 4 weeks</div>
-  <div style="font-size:11px;color:#aaa;padding:0 14px 6px;letter-spacing:0.2px">Click through the weeks, but make sure you sell before the end of week 4</div>
+  <div style="font-size:11px;color:#aaa;padding:2px 14px 6px;letter-spacing:0.2px">Buy and sell to end with most money in 4 weeks</div>
 </header>
 
 <!-- ── SHOP TAB ── -->
@@ -695,6 +694,10 @@ function declineOffer(inv_id) {
 }
 
 function nextCycle() {
+  if (state.cycle >= state.max_cycles && state.inventory.length > 0) {
+    const ok = confirm(`⚠️ You still have ${state.inventory.length} unsold item${state.inventory.length > 1 ? 's' : ''} in your inventory!\n\nUnsold items sell at 50% of market value at game end — sell them now for a higher score.\n\nEnd the game anyway?`);
+    if (!ok) return;
+  }
   if (state.cycle >= state.max_cycles) {
     // Force sell unsold inventory at 50% market
     state.inventory.forEach(item => {
