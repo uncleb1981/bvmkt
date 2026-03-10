@@ -315,6 +315,32 @@
   /* ── Empty state ── */
   .empty { text-align: center; color: #888; padding: 40px 20px; font-size: 15px; }
 
+  /* ── Warning modal ── */
+  #warn-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  #warn-modal.show { display: flex; }
+  .warn-box {
+    background: white;
+    border-radius: 14px;
+    padding: 24px 20px 18px;
+    margin: 20px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .warn-box .warn-icon { font-size: 40px; margin-bottom: 10px; }
+  .warn-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .warn-box p { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 18px; }
+  .warn-actions { display: flex; flex-direction: column; gap: 8px; }
+
   /* ── Section title ── */
   .section-title {
     font-size: 13px;
@@ -324,6 +350,111 @@
     letter-spacing: 0.5px;
     margin-bottom: 10px;
   }
+
+  /* ── Sale animation overlay ── */
+  #sale-anim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    z-index: 400;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  #sale-anim.show { display: flex; }
+  .sa-box {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 24px 20px;
+    margin: 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.35s ease;
+  }
+  .sa-emoji { font-size: 54px; margin-bottom: 6px; }
+  .sa-sold-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #007600; margin-bottom: 2px; }
+  .sa-amount { font-size: 46px; font-weight: 800; color: #ff9900; line-height: 1.1; }
+  .sa-profit { font-size: 15px; font-weight: 700; margin: 4px 0 12px; }
+  .sa-stars-row { font-size: 34px; margin: 6px 0 4px; letter-spacing: 3px; min-height: 44px; }
+  .sa-star { display: inline-block; opacity: 0; }
+  .sa-star.pop { animation: starPop 0.35s ease forwards; }
+  .sa-buyer { font-size: 12px; color: #555; margin-top: 8px; font-weight: 600; }
+  .sa-review { font-size: 12px; color: #888; font-style: italic; margin-top: 4px; line-height: 1.4; padding: 0 4px; }
+  .sa-tap { font-size: 11px; color: #ccc; margin-top: 14px; }
+  @keyframes starPop {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.5) rotate(8deg);  opacity: 1; }
+    100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Cash badge flash ── */
+  @keyframes cashGreen {
+    0%   { background: #ff9900; transform: scale(1); }
+    45%  { background: #00a650; transform: scale(1.2); }
+    100% { background: #ff9900; transform: scale(1); }
+  }
+  @keyframes cashRed {
+    0%   { background: #ff9900; transform: scale(1); }
+    45%  { background: #b12704; transform: scale(1.1); }
+    100% { background: #ff9900; transform: scale(1); }
+  }
+  .cash-flash-green { animation: cashGreen 0.5s ease; }
+  .cash-flash-red   { animation: cashRed   0.4s ease; }
+
+  /* ── Hot buyer offer ── */
+  .offer-box.hot-buyer { background: #fff8e6; border-color: #ff9900; }
+  .hot-badge {
+    background: #ff9900; color: #111;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    display: inline-block; margin-bottom: 6px;
+  }
+
+  /* ── Profit preview ── */
+  .profit-preview { font-size: 12px; color: #888; margin-top: 5px; min-height: 16px; }
+  .profit-preview.up   { color: #007600; font-weight: 600; }
+  .profit-preview.down { color: #b12704; font-weight: 600; }
+
+  /* ── Inventory cap notice ── */
+  .inv-full-notice {
+    background: #fff3cd; border: 1px solid #ffc107;
+    border-radius: 6px; padding: 8px 12px;
+    font-size: 12px; color: #856404;
+    margin-bottom: 10px; text-align: center;
+  }
+
+  /* ── Deals hint ── */
+  .deals-hint {
+    font-size: 12px; color: #888; text-align: center;
+    padding: 6px 0 2px; font-style: italic;
+  }
+
+  /* ── Liquidated badge ── */
+  .liq-badge {
+    font-size: 10px; font-weight: 700; background: #b12704;
+    color: white; padding: 1px 6px; border-radius: 3px;
+    margin-left: 6px; vertical-align: middle;
+  }
+
+  /* ── Weekly recap modal ── */
+  #recap-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  #recap-modal.show { display: flex; }
+  .recap-stat { font-size: 15px; margin: 6px 0; }
+  .recap-stat strong { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -354,6 +485,43 @@
 <section id="tab-sold">
   <div id="sold-items"></div>
 </section>
+
+<!-- ── SALE ANIMATION ── -->
+<div id="sale-anim" onclick="dismissSaleAnim()">
+  <div class="sa-box">
+    <div id="sa-emoji" class="sa-emoji"></div>
+    <div class="sa-sold-label">SOLD!</div>
+    <div id="sa-amount" class="sa-amount"></div>
+    <div id="sa-profit" class="sa-profit"></div>
+    <div id="sa-stars" class="sa-stars-row"></div>
+    <div id="sa-buyer" class="sa-buyer"></div>
+    <div id="sa-review" class="sa-review"></div>
+    <div class="sa-tap">Tap to continue</div>
+  </div>
+</div>
+
+<!-- ── WEEKLY RECAP MODAL ── -->
+<div id="recap-modal">
+  <div class="warn-box">
+    <div class="warn-icon" id="recap-icon">📊</div>
+    <h3 id="recap-title"></h3>
+    <div id="recap-body" style="text-align:left;margin:10px 0 18px"></div>
+    <button class="btn btn-buy" onclick="closeRecap()">Next Week →</button>
+  </div>
+</div>
+
+<!-- ── SELL WARNING MODAL ── -->
+<div id="warn-modal">
+  <div class="warn-box">
+    <div class="warn-icon">⚠️</div>
+    <h3 id="warn-title">Unsold Items!</h3>
+    <p id="warn-msg"></p>
+    <div class="warn-actions">
+      <button class="btn btn-sell" onclick="closeWarnModal()">Go Back and Sell</button>
+      <button class="btn btn-secondary" onclick="confirmEndGame()">End Game Anyway</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── GAME OVER ── -->
 <div id="game-over-screen">
@@ -470,6 +638,74 @@ const CATALOG = [
   // High-value
   {id:"ebike",         name:"E-Bike (needs new battery)",       emoji:"⚡",  market:280, desc:"Great otherwise. 250W motor, all cables good. New battery ~$80. Steal of the century."},
   {id:"yogamat",       name:"Yoga Mat (extra thick)",           emoji:"🧘",  market:20,  desc:"Used. 6mm non-slip mat, washed. Bought for hot yoga, used for napping. No regrets."},
+
+  // ── More Kitchen ──
+  {id:"standmixer",    name:"KitchenAid Stand Mixer",           emoji:"🥣",  market:175, desc:"Good condition. Classic red, all attachments. It's seen some serious baking drama."},
+  {id:"vitamix",       name:"Vitamix Blender (used)",           emoji:"🥤",  market:110, desc:"Good condition. Makes everything smooth. Cleaned well after last smoothie obsession."},
+  {id:"airpurifier",   name:"Air Purifier (HEPA)",              emoji:"🌬️",  market:55,  desc:"Like new. Runs quietly. Bought for allergy season. Season passed, problem didn't."},
+  {id:"ricecooker",    name:"Large Rice Cooker (10-cup)",       emoji:"🍚",  market:28,  desc:"Good condition. Keep-warm function. Rice was always perfect. We moved to pasta."},
+  {id:"castiron",      name:"Cast Iron Skillet Set (3-piece)",  emoji:"🍳",  market:45,  desc:"Well-seasoned. Heavy but worth it. The Ozarks deserve good cooking."},
+  {id:"winefridge",    name:"Wine Fridge (24-bottle)",          emoji:"🍷",  market:80,  desc:"Good condition. Temperature controlled, quiet hum. Perfect for the back porch setup."},
+  {id:"sousvide",      name:"Sous Vide Cooker",                 emoji:"🌡️",  market:38,  desc:"Like new. Used twice. The steaks were incredible. Then I discovered Bentonville restaurants."},
+
+  // ── More Outdoor / Sports ──
+  {id:"paddleboard",   name:"Paddleboard (10ft)",               emoji:"🏄",  market:240, desc:"Good condition. Paddle and leash included. Many great mornings on Beaver Lake."},
+  {id:"hammock",       name:"Hammock w/ Straps",                emoji:"🛌",  market:32,  desc:"Like new. Double hammock, 400lb capacity. Great for Lake Leatherwood or your backyard."},
+  {id:"fishingrods",   name:"Fishing Rod Set (3-piece)",        emoji:"🎣",  market:42,  desc:"Used. Rods, reels, tackle box included. Beaver Lake is stocked and waiting."},
+  {id:"climbingshoes", name:"Climbing Shoes (size 10)",         emoji:"🧗",  market:50,  desc:"Good condition. La Sportiva, light rubber wear. Horseshoe Canyon ready."},
+  {id:"discgolf",      name:"Disc Golf Set (6 discs)",          emoji:"🥏",  market:28,  desc:"Good condition. Driver, mid, putters. Perfect for Memorial Park or Coler."},
+  {id:"tennis",        name:"Tennis Racket + 3 Cans Balls",     emoji:"🎾",  market:38,  desc:"Good condition. Head racket, unopened balls. The Bentonville courts are gorgeous."},
+  {id:"cooler",        name:"High-End Cooler (45qt)",           emoji:"🧊",  market:85,  desc:"Good condition. Keeps ice 5+ days. Float trip veteran. One corner scuff."},
+  {id:"skiboots",      name:"Ski Boots (size 10, Mondo 27.5)",  emoji:"⛷️",  market:70,  desc:"Good condition. Used a few seasons. Road trip to Steamboat was worth it."},
+  {id:"golfclubs",     name:"Golf Club Set (7-piece + bag)",    emoji:"⛳",  market:75,  desc:"Used. Good starter set. Great for Tanyard Creek or the Rogers courses."},
+
+  // ── More Electronics ──
+  {id:"ipad",          name:"iPad (6th Gen, 32GB)",             emoji:"📱",  market:115, desc:"Good condition. Wi-Fi only, lightning charger. Screen protector on. Kids ready."},
+  {id:"ringbell",      name:"Ring Video Doorbell",              emoji:"🔔",  market:50,  desc:"Like new. HD video, motion alerts. Upgraded to Pro. Very paranoid now."},
+  {id:"drone",         name:"DJI Mini Drone",                   emoji:"🚁",  market:135, desc:"Good condition. 2.7K video, 30-min flight time. Best way to see NWA trails from above."},
+  {id:"headphones",    name:"Sony XM4 Noise-Cancel Headphones", emoji:"🎧",  market:125, desc:"Like new. Best noise canceling available. Used commuting to Walmart HQ daily."},
+  {id:"kindle",        name:"Kindle Paperwhite",                emoji:"📚",  market:50,  desc:"Good condition. 8GB, waterproof. Many books read poolside. Upgraded to new model."},
+  {id:"projector",     name:"Portable Projector (1080p)",       emoji:"📽️",  market:90,  desc:"Good condition. Built-in speakers. Outdoor movie nights in the backyard. Very NWA."},
+  {id:"gamingheadset", name:"Gaming Headset (USB surround)",    emoji:"🎮",  market:32,  desc:"Like new. Noise-canceling mic. My clan moved to mobile. Their loss, your gain."},
+
+  // ── More Fitness ──
+  {id:"exercisebike",  name:"Stationary Exercise Bike",         emoji:"🚴",  market:115, desc:"Used. Magnetic resistance, LCD screen. Great for days you can't hit the Bentonville trails."},
+  {id:"kettlebells",   name:"Kettlebell Set (15/25/35lb)",      emoji:"🏋️",  market:52,  desc:"Good condition. One very serious year of use. Now they live in the corner."},
+  {id:"pullupbar",     name:"Doorframe Pull-Up Bar",            emoji:"💪",  market:20,  desc:"Like new. Fits most door frames. I did four pull-ups total. Selling with dignity."},
+  {id:"foamroller",    name:"Foam Roller Set (2-piece)",        emoji:"🧘",  market:22,  desc:"Good condition. Standard and spiky. Essential for post-Slaughter Pen recovery."},
+  {id:"treadmill",     name:"Folding Treadmill",                emoji:"🏃",  market:155, desc:"Good condition. 3.0 HP, folds flat, quiet motor. Dog chased it once. We all learned."},
+  {id:"resistbands",   name:"Resistance Band Set (5 levels)",   emoji:"💪",  market:20,  desc:"New. Still in packaging. Door anchor included. Peak optimism purchase."},
+
+  // ── More Home ──
+  {id:"roomba",        name:"Roomba Robot Vacuum",              emoji:"🤖",  market:105, desc:"Good condition. Schedules, maps rooms, docks itself. Dog considers it an enemy."},
+  {id:"airmatress",    name:"Queen Air Mattress + Pump",        emoji:"🛏️",  market:32,  desc:"Like new. Self-inflating, flocked top. Used twice for guests. Guests were comfortable."},
+  {id:"ledmirror",     name:"LED Vanity Mirror (3 settings)",   emoji:"🪞",  market:38,  desc:"Good condition. USB port, adjustable brightness. Great for lighting everything perfectly."},
+  {id:"powerstation",  name:"Portable Power Station (500Wh)",   emoji:"🔋",  market:90,  desc:"Like new. Solar compatible. Perfect for camping or BTown trail weekend basecamp."},
+
+  // ── More Kids / Family ──
+  {id:"scooter",       name:"Kids Scooter (foldable, age 5+)",  emoji:"🛴",  market:28,  desc:"Good condition. Lightweight, adjustable height. Ridden on every sidewalk in Rogers."},
+  {id:"trampoline",    name:"Kids Trampoline (8ft + net)",      emoji:"⭕",  market:70,  desc:"Good condition. Safety net, padded frame. One very athletic summer."},
+  {id:"rideontoy",     name:"Kids Electric Ride-On Car",        emoji:"🚗",  market:60,  desc:"Good condition. 2.5mph, rechargeable. Works great on smooth surfaces and driveways."},
+  {id:"babyswing",     name:"Electric Baby Swing",              emoji:"👶",  market:42,  desc:"Good condition. 6 speeds, 5 sounds, timer. Saved our sanity for 8 months straight."},
+  {id:"puzzles",       name:"Puzzle Collection (4 puzzles)",    emoji:"🧩",  market:22,  desc:"Good condition. 500-1000 pieces each. All verified complete. Many rainy Sundays."},
+
+  // ── More Local / NWA ──
+  {id:"nwahoodie",     name:"Visit NWA Hoodie",                 emoji:"🏔️",  market:28,  desc:"Good condition. Size M. Soft fleece, minimal logo. Represents the best region in Arkansas."},
+  {id:"trailmap",      name:"Framed NWA Trail Map Print",       emoji:"🗺️",  market:35,  desc:"Like new. Detailed topographic art print, 18x24, black wood frame. Mudroom or office."},
+  {id:"scottbottle",   name:"Scott Bikes Water Bottle (24oz)",  emoji:"🚰",  market:20,  desc:"New. Official Scott branded. Perfect for Slaughter Pen or Coler morning rides."},
+  {id:"cbookartbook",  name:"Crystal Bridges Art Book",         emoji:"📖",  market:28,  desc:"Like new. Official museum coffee table book. Full color, hardcover. Very cultured shelf."},
+  {id:"picnicblanket", name:"Waterproof Picnic Blanket (XL)",   emoji:"🧺",  market:22,  desc:"New. Perfect for First Friday, Crystal Bridges lawn, or Lake Leatherwood sunsets."},
+
+  // ── More Dogs ──
+  {id:"dogagility",    name:"Dog Agility Set (6-piece)",        emoji:"🐕",  market:36,  desc:"Good condition. Tunnels, jumps, weave poles. Our dog preferred the couch."},
+  {id:"dogpuzzle",     name:"Dog Puzzle Toy Set (3 levels)",    emoji:"🧩",  market:22,  desc:"Like new. Interactive puzzles, level 1-3. Our dog cracked all three in one week."},
+  {id:"doggrooming",   name:"Dog Grooming Kit (full set)",      emoji:"✂️",  market:26,  desc:"Like new. Clippers, combs, nail grinder, scissors. Professional results not guaranteed."},
+
+  // ── More Plants ──
+  {id:"pothos",        name:"Pothos Plant (4ft vine)",          emoji:"🌿",  market:20,  desc:"Very healthy. Grows anywhere — I grew one in a closet. It survived. Pot included."},
+  {id:"aloeset",       name:"Aloe Vera Set (3 pots)",           emoji:"🌵",  market:22,  desc:"Healthy. Perfect for sunburns, which you will get hiking in July. Take care of them."},
+  {id:"hydroherbs",    name:"Hydroponic Herb Garden Kit",       emoji:"🌱",  market:42,  desc:"Like new. LED grow light, 6 pods. Fresh basil forever. Or until you go on vacation."},
+  {id:"ceramicplanters",name:"Large Ceramic Planters (pair)",   emoji:"🪴",  market:38,  desc:"Good condition. 18\" diameter, neutral gray. Flanked my front door for a year. Classy."},
 ];
 
 const BUYER_NAMES = [
@@ -551,25 +787,26 @@ function resolveOffer(listingPrice, marketValue, rejectCount) {
   // Hot buyer — 12% chance
   if (Math.random() < 0.12) {
     const offer = Math.min(Math.round(marketValue * randFloat(1.5, 2.5)), listingPrice);
-    return [offer, true];
+    return [offer, true, true]; // isHotBuyer = true
   }
   // Penalty cap after 2 rejections
   if (rejectCount >= 2) {
-    return [Math.round(marketValue * randFloat(0.4, 0.75)), true];
+    return [Math.round(marketValue * randFloat(0.4, 0.75)), true, false];
   }
   const ratio = listingPrice / marketValue;
   if (ratio <= 1.1) {
-    return [Math.round(listingPrice * randFloat(0.95, 1.0)), true];
+    return [Math.round(listingPrice * randFloat(0.95, 1.0)), true, false];
   } else if (ratio <= 1.35) {
-    return [Math.round(marketValue * randFloat(0.88, 0.98)), true];
+    return [Math.round(marketValue * randFloat(0.88, 0.98)), true, false];
   } else {
-    return [null, false];
+    return [null, false, false];
   }
 }
 
 function newGame() {
   return {
-    cash: 100,
+    cash: 200,
+    weekStartCash: 200,
     inventory: [],
     sold: [],
     cycle: 1,
@@ -618,11 +855,15 @@ function startGame() {
 }
 
 // ── Game actions ──────────────────────────────────────────────────────────
+const INVENTORY_CAP = 5;
+
 function buyItem(listing_id) {
   const item = state.marketplace.find(i => i.listing_id === listing_id);
   if (!item || item.price > state.cash) return;
+  if (state.inventory.length >= INVENTORY_CAP) return;
   state.cash -= item.price;
   state.cash = Math.round(state.cash);
+  flashCash('red');
   state.inventory.push({
     inv_id: makeId(),
     id: item.id,
@@ -650,11 +891,13 @@ function listItem(inv_id) {
   item.listing_price = price;
 
   const rejectCount = item.reject_count || 0;
-  const [offerAmt, accepted] = resolveOffer(price, item.market, rejectCount);
+  const [offerAmt, accepted, isHotBuyer] = resolveOffer(price, item.market, rejectCount);
 
   let stars;
   if (!accepted) {
     stars = rejectCount >= 1 ? 1 : randInt(1, 3);
+  } else if (isHotBuyer) {
+    stars = 5;
   } else if (rejectCount >= 2) {
     stars = randInt(1, 3);
   } else if (rejectCount === 1) {
@@ -668,7 +911,7 @@ function listItem(inv_id) {
     : REVIEWS_GOOD[randInt(0, REVIEWS_GOOD.length - 1)];
   const buyer = BUYER_NAMES[randInt(0, BUYER_NAMES.length - 1)];
 
-  item.offer = { buyer, amount: offerAmt, accepted, review, stars, forced_low: rejectCount >= 2 };
+  item.offer = { buyer, amount: offerAmt, accepted, review, stars, forced_low: rejectCount >= 2, hot: isHotBuyer };
   render();
 }
 
@@ -680,8 +923,9 @@ function acceptOffer(inv_id) {
   const soldItem = { ...item, status: 'sold', sale_price: item.offer.amount };
   state.sold.push(soldItem);
   state.inventory = state.inventory.filter(i => i.inv_id !== inv_id);
+  flashCash('green');
   render();
-  showTab('sold', document.querySelectorAll('nav button')[2]);
+  animateSale(soldItem);
 }
 
 function declineOffer(inv_id) {
@@ -695,11 +939,13 @@ function declineOffer(inv_id) {
 
 function nextCycle() {
   if (state.cycle >= state.max_cycles && state.inventory.length > 0) {
-    const ok = confirm(`⚠️ You still have ${state.inventory.length} unsold item${state.inventory.length > 1 ? 's' : ''} in your inventory!\n\nUnsold items sell at 50% of market value at game end — sell them now for a higher score.\n\nEnd the game anyway?`);
-    if (!ok) return;
+    const count = state.inventory.length;
+    document.getElementById('warn-msg').textContent =
+      `You have ${count} unsold item${count > 1 ? 's' : ''} in your inventory. Unsold items are liquidated at 50% of market value — sell them now to earn more money before the game ends.`;
+    document.getElementById('warn-modal').classList.add('show');
+    return;
   }
   if (state.cycle >= state.max_cycles) {
-    // Force sell unsold inventory at 50% market
     state.inventory.forEach(item => {
       const salePrice = Math.round(item.market * 0.5);
       state.cash += salePrice;
@@ -711,12 +957,11 @@ function nextCycle() {
     state.cash = Math.round(state.cash);
     state.inventory = [];
     state.game_over = true;
+    render();
   } else {
-    state.cycle += 1;
-    state.marketplace = buildCycleListings();
+    // Show weekly recap before advancing
+    showRecap();
   }
-  render();
-  if (!state.game_over) showTab('shop', document.querySelectorAll('nav button')[0]);
 }
 
 // ── Render ────────────────────────────────────────────────────────────────
@@ -737,9 +982,9 @@ function render() {
   if (state.game_over) {
     document.getElementById('game-over-screen').classList.add('show');
     document.getElementById('final-cash').textContent = '$' + state.cash;
-    const profit = state.cash - 100;
+    const profit = state.cash - 200;
     const el = document.getElementById('final-profit');
-    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit + ' from your $100 start';
+    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit + ' from your $200 start';
     el.className = 'final-profit ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
     showGameOver(state.cash);
     return;
@@ -753,12 +998,23 @@ function render() {
 
 function renderShop() {
   const el = document.getElementById('marketplace-items');
+  const atCap = state.inventory.length >= INVENTORY_CAP;
   const items = state.marketplace.filter(item => item.price <= state.cash);
+  const totalShown = state.marketplace.length;
+  const dealCount = state.marketplace.filter(i => i.price < i.market * 0.5).length;
+
+  let topHtml = '';
+  if (atCap) {
+    topHtml = `<div class="inv-full-notice">🎒 Inventory full (${INVENTORY_CAP}/${INVENTORY_CAP}) — sell something before buying more</div>`;
+  } else if (dealCount > 0) {
+    topHtml = `<div class="deals-hint">🔍 ${dealCount} hidden deal${dealCount > 1 ? 's' : ''} somewhere in this week's listings — can you spot ${dealCount > 1 ? 'them' : 'it'}?</div>`;
+  }
+
   if (items.length === 0) {
-    el.innerHTML = '<div class="empty">Nothing in your budget this week.<br>Hit Next Week to continue.</div>';
+    el.innerHTML = topHtml + '<div class="empty">Nothing in your budget this week.<br>Hit Next Week to continue.</div>';
     return;
   }
-  el.innerHTML = items.map(item => `
+  el.innerHTML = topHtml + items.map(item => `
     <div class="item-card">
       <div class="item-top">
         <div class="item-emoji">${item.emoji}</div>
@@ -768,7 +1024,7 @@ function renderShop() {
         </div>
       </div>
       ${item.desc ? `<div style="font-size:12px;color:#555;margin:4px 0 8px;line-height:1.4">${item.desc}</div>` : ''}
-      <button class="btn btn-buy" onclick="buyItem('${item.listing_id}')">Buy Now</button>
+      <button class="btn btn-buy" ${atCap ? 'disabled' : ''} onclick="buyItem('${item.listing_id}')">Buy Now</button>
     </div>`).join('');
 }
 
@@ -786,13 +1042,17 @@ function renderInventory() {
       statusHtml = '<span class="inv-status status-inventory">In Inventory</span>';
       const rejectWarning = item.reject_count >= 2
         ? `<div style="color:#b12704;font-size:12px;margin-top:4px">⚠️ Buyers will no longer accept offers above your purchase price</div>`
+        : item.reject_count === 1
+        ? `<div style="color:#856404;font-size:12px;margin-top:4px">💡 Try pricing closer to what you paid — buyers in NWA know the market</div>`
         : '';
       actionHtml = `
         <div class="price-row">
-          <input type="number" id="price-${item.inv_id}" placeholder="Your price" min="1" step="1">
+          <input type="number" id="price-${item.inv_id}" placeholder="Your price" min="1" step="1"
+            oninput="updateProfitPreview('${item.inv_id}', ${item.paid})">
           <button class="btn btn-sell" style="width:auto;padding:9px 14px" onclick="listItem('${item.inv_id}')">List</button>
         </div>
         <div class="market-hint" style="margin-top:4px">Paid $${item.paid}</div>
+        <div class="profit-preview" id="preview-${item.inv_id}"></div>
         ${rejectWarning}`;
     }
 
@@ -845,18 +1105,20 @@ function renderSold() {
   el.innerHTML = state.sold.slice().reverse().map(item => {
     const profit = item.sale_price - item.paid;
     const stars = '⭐'.repeat(item.offer.stars);
+    const isLiq = item.offer.buyer === 'EndOfGame_Clearance';
+    const liqBadge = isLiq ? '<span class="liq-badge">LIQUIDATED</span>' : '';
     return `
       <div class="sold-item">
         <div class="sold-emoji">${item.emoji}</div>
         <div class="sold-info">
-          <div class="sold-name">${item.name}</div>
+          <div class="sold-name">${item.name}${liqBadge}</div>
           <div style="font-size:13px">
             Sold for <strong>$${item.sale_price}</strong>
             <span class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">
               (${profit >= 0 ? '+' : ''}$${profit})
             </span>
           </div>
-          <div style="font-size:12px;color:#555;margin-top:2px">${stars} ${item.offer.buyer}</div>
+          <div style="font-size:12px;color:#555;margin-top:2px">${isLiq ? '⭐⭐' : stars} ${isLiq ? 'Clearance buyer' : item.offer.buyer}</div>
           <div class="sold-review">"${item.offer.review}"</div>
         </div>
       </div>`;
@@ -928,6 +1190,158 @@ async function submitScore() {
   await saveScore(name, finalScore, finalAvgStars);
   const scores = await loadScores();
   renderLeaderboard(scores, name);
+}
+
+function closeWarnModal() {
+  document.getElementById('warn-modal').classList.remove('show');
+  showTab('inventory', document.querySelectorAll('nav button')[1]);
+}
+
+function confirmEndGame() {
+  document.getElementById('warn-modal').classList.remove('show');
+  // Force sell remaining inventory at 50% market
+  state.inventory.forEach(item => {
+    const salePrice = Math.round(item.market * 0.5);
+    state.cash += salePrice;
+    state.sold.push({ ...item, status: 'sold', sale_price: salePrice,
+      offer: { buyer: 'EndOfGame_Clearance', amount: salePrice, accepted: true,
+        review: 'Bought it at clearance pricing. Better than nothing, I guess.', stars: 2, forced_low: true }
+    });
+  });
+  state.cash = Math.round(state.cash);
+  state.inventory = [];
+  state.weekStartCash = state.cash;
+  state.game_over = true;
+  render();
+}
+
+// ── Helper: flash cash badge ─────────────────────────────────────────────
+function flashCash(type) {
+  const badge = document.querySelector('.cash-badge');
+  if (!badge) return;
+  badge.classList.remove('cash-flash-green', 'cash-flash-red');
+  void badge.offsetWidth; // reflow to restart animation
+  badge.classList.add(type === 'green' ? 'cash-flash-green' : 'cash-flash-red');
+  setTimeout(() => badge.classList.remove('cash-flash-green', 'cash-flash-red'), 600);
+}
+
+// ── Helper: live profit preview while typing listing price ───────────────
+function updateProfitPreview(inv_id, paid) {
+  const input = document.getElementById('price-' + inv_id);
+  const preview = document.getElementById('preview-' + inv_id);
+  if (!input || !preview) return;
+  const val = parseInt(input.value, 10);
+  if (!val || val <= 0) { preview.textContent = ''; preview.className = 'profit-preview'; return; }
+  const diff = val - paid;
+  if (diff > 0) {
+    preview.textContent = `Paid $${paid} → asking $${val} = +$${diff} profit if sold`;
+    preview.className = 'profit-preview up';
+  } else if (diff === 0) {
+    preview.textContent = `Breaking even at $${val}`;
+    preview.className = 'profit-preview';
+  } else {
+    preview.textContent = `Paid $${paid} → asking $${val} = $${diff} loss if sold`;
+    preview.className = 'profit-preview down';
+  }
+}
+
+// ── Helper: star-by-star sale animation overlay ──────────────────────────
+let _saleAnimTimer = null;
+
+function animateSale(item) {
+  const overlay = document.getElementById('sale-anim');
+  const numStars = item.offer.stars || 1;
+  const isHot = item.offer.hot;
+  const profit = item.sale_price - item.paid;
+
+  document.getElementById('sa-emoji').textContent = item.emoji;
+  document.getElementById('sa-amount').textContent = `$${item.sale_price}`;
+  document.getElementById('sa-profit').textContent = profit >= 0
+    ? `+$${profit} profit 🎉` : `-$${Math.abs(profit)} loss`;
+  document.getElementById('sa-profit').style.color = profit >= 0 ? '#007600' : '#b12704';
+  document.getElementById('sa-buyer').textContent = isHot ? '🔥 HOT BUYER!' : item.offer.buyer;
+  document.getElementById('sa-buyer').style.fontWeight = isHot ? '700' : '400';
+  document.getElementById('sa-buyer').style.color = isHot ? '#cc5500' : '#555';
+  document.getElementById('sa-review').textContent = `"${item.offer.review}"`;
+
+  // Build star elements (hidden initially)
+  const starsEl = document.getElementById('sa-stars');
+  starsEl.innerHTML = '';
+  for (let i = 0; i < numStars; i++) {
+    const span = document.createElement('span');
+    span.className = 'sa-star';
+    span.textContent = '⭐';
+    starsEl.appendChild(span);
+  }
+
+  overlay.classList.add('show');
+
+  // Pop stars one by one
+  const starEls = starsEl.querySelectorAll('.sa-star');
+  starEls.forEach((s, i) => {
+    setTimeout(() => s.classList.add('pop'), 300 + i * 250);
+  });
+
+  // Auto-dismiss after all stars have popped + 1.2s
+  const autoDismissDelay = 300 + numStars * 250 + 1200;
+  if (_saleAnimTimer) clearTimeout(_saleAnimTimer);
+  _saleAnimTimer = setTimeout(() => dismissSaleAnim(), autoDismissDelay);
+}
+
+function dismissSaleAnim() {
+  if (_saleAnimTimer) { clearTimeout(_saleAnimTimer); _saleAnimTimer = null; }
+  document.getElementById('sale-anim').classList.remove('show');
+  // Navigate to Sold tab
+  const soldBtn = document.querySelectorAll('nav button')[2];
+  showTab('sold', soldBtn);
+}
+
+// ── Helper: weekly recap modal ───────────────────────────────────────────
+function showRecap() {
+  const weekNum = state.cycle;
+  const weekCash = state.cash;
+  const weekProfit = weekCash - state.weekStartCash;
+  const soldThisWeek = state.sold.filter(i => i.offer && i.offer.buyer !== 'EndOfGame_Clearance');
+
+  document.getElementById('recap-title').textContent = `Week ${weekNum} Recap`;
+
+  let body = `<div style="font-size:14px;line-height:1.7">`;
+  body += `<div>💰 Cash this week: <strong>$${weekCash}</strong></div>`;
+
+  const profitSign = weekProfit >= 0 ? '+' : '';
+  const profitColor = weekProfit >= 0 ? '#007600' : '#b12704';
+  body += `<div>📈 Week profit: <strong style="color:${profitColor}">${profitSign}$${weekProfit}</strong></div>`;
+  body += `<div>🛍️ Items sold this week: <strong>${state.sold.length}</strong></div>`;
+  body += `<div>🎒 Items still in inventory: <strong>${state.inventory.length}</strong></div>`;
+
+  if (weekProfit > 0) {
+    body += `<div style="margin-top:8px;font-size:13px;color:#555">Nice hustle this week! Keep it up 💪</div>`;
+  } else if (weekProfit === 0) {
+    body += `<div style="margin-top:8px;font-size:13px;color:#555">Broke even — time to find some deals next week!</div>`;
+  } else {
+    body += `<div style="margin-top:8px;font-size:13px;color:#555">Tough week. Look for those deals next week! 🎯</div>`;
+  }
+
+  if (state.inventory.length > 0 && weekNum === state.max_cycles - 1) {
+    body += `<div style="margin-top:8px;font-size:13px;color:#b12704;font-weight:600">⚠️ Next week is your LAST week — sell everything before it ends!</div>`;
+  }
+
+  body += `</div>`;
+  document.getElementById('recap-body').innerHTML = body;
+
+  document.getElementById('recap-modal').classList.add('show');
+}
+
+function closeRecap() {
+  document.getElementById('recap-modal').classList.remove('show');
+  // Advance the cycle
+  state.weekStartCash = state.cash;
+  state.cycle += 1;
+  state.marketplace = buildCycleListings();
+  render();
+  // Navigate to shop tab
+  const shopBtn = document.querySelectorAll('nav button')[0];
+  showTab('shop', shopBtn);
 }
 
 // Start
