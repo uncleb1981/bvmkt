@@ -132,18 +132,6 @@
   }
   .market-hint { font-size: 11px; color: #888; margin-top: 2px; }
 
-  .deal-tag {
-    background: #e63946;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 4px;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-
   /* ── Buttons ── */
   .btn {
     display: inline-block;
@@ -343,7 +331,7 @@
 <header>
   <div class="header-top">
     <div class="logo">BV<span>Marketplace</span></div>
-    <div class="cash-badge" id="cash-display">$100.00</div>
+    <div class="cash-badge" id="cash-display">$100</div>
   </div>
   <div class="cycle-bar">
     Week <span id="cycle-num">1</span> of 4
@@ -410,30 +398,320 @@
 </nav>
 
 <script>
-let state = null;
-
-async function api(path, method='GET', body=null) {
-  const opts = { method, headers: {'Content-Type':'application/json'} };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(path, opts);
-  return r.json();
+// ── Utilities ────────────────────────────────────────────────────────────
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function randFloat(a, b) { return a + Math.random() * (b - a); }
+function makeId() { return Math.random().toString(36).slice(2, 10); }
+function randSample(arr, n) {
+  const a = arr.slice().sort(() => Math.random() - 0.5);
+  return a.slice(0, n);
 }
 
-async function startGame() {
-  state = await api('/api/new-game', 'POST');
+// ── Catalog ──────────────────────────────────────────────────────────────
+const CATALOG = [
+  // Kitchen
+  {id:"airfryer",      name:"Air Fryer (open box)",             emoji:"🍳",  market:30,  desc:"Open box, never cooked a thing. All parts included. My diet started and ended same day."},
+  {id:"instantpot",    name:"Instant Pot",                      emoji:"🫕",  market:25,  desc:"Used twice. Like new. Turns out I'm more of a Taco Mama person."},
+  {id:"coffeegrinder", name:"Burr Coffee Grinder",              emoji:"☕",  market:35,  desc:"Good condition. Used daily for a year. Perk Coffee is still better but this is close."},
+  // Outdoor / biking
+  {id:"hikingboots",   name:"Hiking Boots (size 10)",           emoji:"🥾",  market:40,  desc:"Good condition. Light trail wear on sole. Waterproof. Lake Leatherwood approved."},
+  {id:"mtbbike",       name:"Mountain Bike",                    emoji:"🚵",  market:275, desc:"Good condition. 29\" wheels, 21-speed, recently tuned. Slaughter Pen trail ready."},
+  {id:"bikerack",      name:"Bike Rack for Car",                emoji:"🚗",  market:55,  desc:"Used. Fits most cars and SUVs. Holds 2 bikes. Minor scratches from actual adventures."},
+  {id:"tent",          name:"Camping Tent (2-person)",          emoji:"⛺",  market:35,  desc:"Good condition. Used a handful of times. Poles and stakes all present."},
+  {id:"hydration",     name:"Hydration Pack",                   emoji:"🎒",  market:22,  desc:"Like new. 2L bladder cleaned after last ride. Essential for the BTown trails."},
+  {id:"bikelock",      name:"Bike Lock",                        emoji:"🔒",  market:20,  desc:"Good condition. Combination lock, cable included. Code not 1234, I checked."},
+  {id:"campchair",     name:"Portable Camp Chair",              emoji:"🪑",  market:20,  desc:"Used. Folds flat, carry bag included. Great for First Friday on the Square."},
+  {id:"roadbike",      name:"Road Bike",                        emoji:"🚴",  market:280, desc:"Used. Shimano 105 groupset, serviced last spring. Fast enough to feel smug on the Razorback Greenway."},
+  {id:"kayak",         name:"Kayak (sit-on-top)",               emoji:"🛶",  market:200, desc:"Good condition. 10ft, paddle included. Spent many Saturdays on Beaver Lake in this."},
+  // Electronics
+  {id:"speaker",       name:"Bluetooth Speaker",                emoji:"🔊",  market:25,  desc:"Good condition. Waterproof, 12hr battery. Survived a float trip. Small scuff on bottom."},
+  {id:"gopro",         name:"GoPro Camera",                     emoji:"📷",  market:110, desc:"Used. Hero 9, all mounts included. Get the trail footage you deserve."},
+  {id:"switch",        name:"Nintendo Switch w/ 3 games",       emoji:"🎮",  market:150, desc:"Good condition. Mario Kart, Zelda, Animal Crossing. Kids upgraded to new model."},
+  {id:"smarttv",       name:"55\" Smart TV",                    emoji:"📺",  market:140, desc:"Good condition. Samsung, works perfectly. Remote included. Upgraded to 75\", don't tell my wife the price."},
+  {id:"toothbrush",    name:"Electric Toothbrush",              emoji:"🪥",  market:22,  desc:"Like new. 3 replacement heads, charger included. Bought two and this one got lonely."},
+  // Travel
+  {id:"luggage",       name:"Roller Luggage (22\")",            emoji:"🧳",  market:40,  desc:"Good condition. Carry-on size, spinner wheels, TSA lock. Survived Spirit Airlines."},
+  // Yard / tools
+  {id:"leafblower",    name:"Leaf Blower",                      emoji:"🍃",  market:45,  desc:"Used. Gas-powered, runs strong. Garage stored all winter. Ready for fall cleanup."},
+  {id:"pressure",      name:"Pressure Washer",                  emoji:"💦",  market:80,  desc:"Good condition. Electric, 1800 PSI. Used last summer on the driveway and the dog."},
+  {id:"drill",         name:"Power Drill (cordless 18V)",       emoji:"🔧",  market:30,  desc:"Used. Includes 2 batteries and charger. Bits not included — I need those."},
+  {id:"shopfan",       name:"Shop Fan",                         emoji:"💨",  market:22,  desc:"Used. 20\" industrial fan, loud but powerful. Kept the garage survivable in August."},
+  {id:"ladder",        name:"Extension Ladder (24ft)",          emoji:"🪜",  market:55,  desc:"Good condition. Aluminum, no bends or damage. Taller than anything in Bentonville."},
+  {id:"pelletsmoker",  name:"Pellet Smoker/Grill",              emoji:"🔥",  market:175, desc:"Good condition. WiFi-enabled, used a dozen times. Cover included. Smells like victory."},
+  // Storage / home
+  {id:"storagebins",   name:"Storage Bins (set of 6)",          emoji:"📦",  market:22,  desc:"Like new. Clear stackable bins with lids. Used for exactly one move."},
+  {id:"standingdesk",  name:"Standing Desk (height adjustable)",emoji:"🖥️",  market:120, desc:"Used. 48\" wide, minor surface scratch. I stood at it once and then sat back down."},
+  {id:"patiofurniture",name:"Patio Set (4 chairs + table)",     emoji:"☀️",  market:150, desc:"Good condition. Aluminum frame, cushions included. One cushion has a faded spot — squirrel."},
+  {id:"vinylplayer",   name:"Vinyl Record Player",              emoji:"🎵",  market:85,  desc:"Good condition. Belt drive, built-in speakers, includes ~40 records. Very Momentary vibes."},
+  // Kids
+  {id:"toddlerbike",   name:"Toddler Bike w/ Training Wheels",  emoji:"🚲",  market:22,  desc:"Good condition. Ages 2–4, training wheels included. Future Slaughter Pen shredder."},
+  {id:"boardgames",    name:"Board Game Collection",            emoji:"🎲",  market:25,  desc:"Used. Catan, Ticket to Ride, Codenames — all pieces present, unlike my family's patience."},
+  {id:"lego",          name:"Lego Set (90% complete)",          emoji:"🧱",  market:22,  desc:"Used. Missing a few pieces. No instructions. Character building, literally."},
+  {id:"babymonitor",   name:"Baby Monitor",                     emoji:"👶",  market:28,  desc:"Good condition. Video + audio, 1000ft range. The baby has opinions about everything."},
+  {id:"highchair",     name:"Portable High Chair",              emoji:"🪑",  market:22,  desc:"Used. Folds for travel. Some food staining on straps — I don't want to talk about it."},
+  // Local / Bentonville
+  {id:"crystalbag",    name:"Crystal Bridges Tote Bag",         emoji:"🖼️",  market:20,  desc:"Like new. Official museum shop canvas bag. Carried books, never art."},
+  {id:"hoodie",        name:"U of A Razorbacks Hoodie",         emoji:"👕",  market:25,  desc:"Good condition. Size L, washed, no stains. Wore it during the good years. WPS."},
+  {id:"hotsauce",      name:"Locally Made Hot Sauce (3-pack)",  emoji:"🌶️",  market:25,  desc:"New. Sealed bottles from a NWA maker. Mild, medium, and 'call 911.'"},
+  {id:"wristband",     name:"Bikes Blues & BBQ Wristband",      emoji:"🎸",  market:20,  desc:"New. Unused from last year's Fayetteville festival. Excellent conversation starter."},
+  // Dogs
+  {id:"dogcrate",      name:"Large Dog Crate (42\")",           emoji:"🐕",  market:35,  desc:"Used. Wire crate, fold-down, divider included. Our dog staged a jailbreak so we gave up."},
+  {id:"dogstroller",   name:"Dog Stroller",                     emoji:"🐶",  market:45,  desc:"Good condition. Used for our senior beagle on trail walks. Cup holder included, very NWA."},
+  {id:"dogcarrier",    name:"Dog Backpack Carrier",             emoji:"🎒",  market:32,  desc:"Like new. Used twice on BTown trails. Fits dogs up to 20 lbs. Dog preferred walking."},
+  {id:"dogharness",    name:"Dog Harness & Leash Set",          emoji:"🦮",  market:20,  desc:"Good condition. No-pull harness, size M, 6ft leash included. Dog still pulls."},
+  {id:"dogfeeder",     name:"Automatic Dog Feeder",             emoji:"🍖",  market:28,  desc:"Like new. Programmable, holds 6 cups. Dog learned to open it manually. Retired unit."},
+  {id:"doglifejacket", name:"Dog Life Jacket",                  emoji:"🐾",  market:25,  desc:"Good condition. Size L, bright orange, grab handle on top. Beaver Lake approved."},
+  // Plants
+  {id:"monstera",      name:"Monstera Plant (large)",           emoji:"🌿",  market:30,  desc:"Healthy, ~3ft tall. Bright indirect light. Pot included. Moving and can't take it."},
+  {id:"succulents",    name:"Succulent Collection (set of 6)",  emoji:"🌵",  market:20,  desc:"New. Assorted low-maintenance varieties. Survived my attention span — that's saying something."},
+  {id:"gardenbed",     name:"Cedar Raised Garden Bed (4x8)",    emoji:"🌱",  market:55,  desc:"Used one season. Cedar, easy assembly. Grew tomatoes, peppers, and a healthy obsession."},
+  {id:"fiddleleaf",    name:"Fiddle Leaf Fig",                  emoji:"🌳",  market:35,  desc:"Healthy, ~4ft tall. Bright indirect light. It outlived my last three hobbies."},
+  {id:"snakeplant",    name:"Snake Plant",                      emoji:"🪴",  market:20,  desc:"Very healthy, 2ft tall. Basically unkillable. I've tried. Pot included."},
+  {id:"gardentools",   name:"Garden Tool Set (5-piece)",        emoji:"🧑‍🌾", market:22,  desc:"Used. Trowel, cultivator, pruner, gloves, kneeler. Got too into it, now scaling back."},
+  // High-value
+  {id:"ebike",         name:"E-Bike (needs new battery)",       emoji:"⚡",  market:280, desc:"Great otherwise. 250W motor, all cables good. New battery ~$80. Steal of the century."},
+  {id:"yogamat",       name:"Yoga Mat (extra thick)",           emoji:"🧘",  market:20,  desc:"Used. 6mm non-slip mat, washed. Bought for hot yoga, used for napping. No regrets."},
+];
+
+const BUYER_NAMES = [
+  "TrailDave_Bentonville","KaylaB_NWA","OzarkMike72","BikeMom_BTown",
+  "CrystalBridgesKaren","WalmartGreeter_Ed","SlaughterPenSue",
+  "RazorbackRandy","FoodTruckFred","PerkCoffeePaul","MTB_Maggie",
+  "NWANatureLover","BentonvilleBeth","DowntownDave_AR","OzarkOutdoorOllie",
+  "BeaverLakeBob","GreenWayGary","TheMomentaryMargo","PedalarsPubPete",
+  "ScottBikesStan","RazorbackGreenwayCindy","FirstFridayFrank"
+];
+
+const REVIEWS_GOOD = [
+  "Met at Perk Coffee. They had no idea I was flipping it. Sipping a latte, feeling like a genius.",
+  "Picked up at the Slaughter Pen trailhead. Smelled like sunscreen and ambition. 10/10.",
+  "Drove from Rogers on 102. Took 45 minutes. Worth every red light.",
+  "Exchanged in the Walmart Museum parking lot. Alice would've approved of this deal.",
+  "My spouse thinks I bought it new. Let's keep that between us.",
+  "Grabbed it between yoga and my third espresso at Onyx. Bentonville is a lifestyle.",
+  "Met at Crystal Bridges. Felt very cultured. Bought a used item surrounded by $40M in art.",
+  "Picked up after my Lake Leatherwood loop. Legs were cooked but the deal was fresh.",
+  "Smoother than the Razorback Greenway on a Tuesday morning. Highly recommend.",
+  "My dog knocked it over immediately. That's a 5-star endorsement in our house.",
+  "Found it cheaper than Walmart. I feel like I have cheated the system.",
+  "Met at the Momentary. Very artsy energy for a power tool pickup.",
+  "Third BV Marketplace purchase this week. My garage is full. Send help.",
+  "Bentonville people are suspiciously friendly. Must be all the trail endorphins.",
+  "Paid with exact cash at a food truck. Peak NWA transaction. No notes.",
+  "Told my wife it was a gift for the house. Technically true.",
+  "My neighbor saw me loading it up and asked for your contact. You're famous now.",
+  "Same-day pickup. In Bentonville everyone moves fast — like descending Coler.",
+  "Already flipped it for more. Don't tell anyone. This town is full of opportunity.",
+  "Met at Pedalar's Pub parking lot. Felt extremely on-brand for this city.",
+  "Condition was exactly as described, which is rare. You're one of the good ones.",
+  "Loaded it into my Subaru next to my bike and my dog. Very NWA energy.",
+  "Listed on a Sunday, sold by Monday. This is how you fund your next trail upgrade.",
+  "Worth the drive from Fayetteville. And that's saying something on a Friday.",
+];
+
+const REVIEWS_BAD = [
+  "Way overpriced. I've seen better deals at the Walmart clearance aisle and that's saying a lot.",
+  "Seller clearly thinks this is a Scott Bikes showroom. It is not.",
+  "Paid too much. My dog looked at it and walked away. He's a better shopper than me.",
+  "Description said 'good condition.' I've seen better condition items in the Ozark dumpsters.",
+  "Not thrilled. Drove all the way from Fayetteville for this. On a Friday. On I-49.",
+  "Item works but this price? I've been on smoother trails than this transaction.",
+  "Overcharged. My Perk Coffee cost less and that genuinely made me feel something.",
+  "Felt like getting stuck behind a slow rider on Coler. Painful and unavoidable.",
+  "This was not a deal. This was a crime against the NWA resale community.",
+  "Listed at twice what it's worth. Bold move. Did not pay off. Bentonville has Google.",
+  "Seller must think Crystal Bridges adds value to everything in this zip code. It does not.",
+  "Item arrived fine but the price? I've seen more reasonable numbers on a Walmart receipt.",
+  "Bought it because I was too polite to walk away. Classic Bentonville problem.",
+  "Not as described. Condition was more 'Ozark yard sale' than 'gently used.'",
+  "Overpriced like downtown Bentonville brunch. At least the brunch is worth it.",
+];
+
+// ── Game logic ────────────────────────────────────────────────────────────
+function buildCycleListings() {
+  const pool = randSample(CATALOG, 14);
+  const dealCount = randInt(1, 3);
+  const dealIndices = new Set(randSample([...Array(14).keys()], dealCount));
+  return pool.map((item, i) => {
+    const price = dealIndices.has(i)
+      ? Math.max(20, Math.round(item.market * randFloat(0.15, 0.30)))
+      : Math.max(20, Math.round(item.market * randFloat(0.85, 1.10)));
+    return {
+      listing_id: makeId(),
+      id: item.id,
+      name: item.name,
+      emoji: item.emoji,
+      desc: item.desc,
+      market: item.market,
+      price,
+    };
+  });
+}
+
+function resolveOffer(listingPrice, marketValue, rejectCount) {
+  // Hot buyer — 12% chance
+  if (Math.random() < 0.12) {
+    const offer = Math.min(Math.round(marketValue * randFloat(1.5, 2.5)), listingPrice);
+    return [offer, true];
+  }
+  // Penalty cap after 2 rejections
+  if (rejectCount >= 2) {
+    return [Math.round(marketValue * randFloat(0.4, 0.75)), true];
+  }
+  const ratio = listingPrice / marketValue;
+  if (ratio <= 1.1) {
+    return [Math.round(listingPrice * randFloat(0.95, 1.0)), true];
+  } else if (ratio <= 1.35) {
+    return [Math.round(marketValue * randFloat(0.88, 0.98)), true];
+  } else {
+    return [null, false];
+  }
+}
+
+function newGame() {
+  return {
+    cash: 100,
+    inventory: [],
+    sold: [],
+    cycle: 1,
+    max_cycles: 4,
+    marketplace: buildCycleListings(),
+    game_over: false,
+  };
+}
+
+// ── Leaderboard (localStorage) ────────────────────────────────────────────
+const SCORES_KEY = 'bvmkt_scores_v1';
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(SCORES_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveScores(scores) {
+  localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
+}
+
+function qualifiesForLeaderboard(score) {
+  const scores = loadScores();
+  if (scores.length < 10) return true;
+  return score > Math.min(...scores.map(s => s.score));
+}
+
+// ── Game state ────────────────────────────────────────────────────────────
+let state = null;
+
+function startGame() {
+  state = newGame();
   document.getElementById('game-over-screen').classList.remove('show');
-  document.querySelector('body').style.display = '';
   showTab('shop', document.querySelector('nav button'));
   render();
 }
 
+// ── Game actions ──────────────────────────────────────────────────────────
+function buyItem(listing_id) {
+  const item = state.marketplace.find(i => i.listing_id === listing_id);
+  if (!item || item.price > state.cash) return;
+  state.cash -= item.price;
+  state.cash = Math.round(state.cash);
+  state.inventory.push({
+    inv_id: makeId(),
+    id: item.id,
+    name: item.name,
+    emoji: item.emoji,
+    market: item.market,
+    paid: item.price,
+    status: 'in_inventory',
+    reject_count: 0,
+    offer: null,
+  });
+  state.marketplace = state.marketplace.filter(i => i.listing_id !== listing_id);
+  render();
+}
+
+function listItem(inv_id) {
+  const input = document.getElementById('price-' + inv_id);
+  const price = Math.round(parseFloat(input.value));
+  if (!price || price <= 0) return;
+
+  const item = state.inventory.find(i => i.inv_id === inv_id);
+  if (!item) return;
+
+  item.status = 'listed';
+  item.listing_price = price;
+
+  const rejectCount = item.reject_count || 0;
+  const [offerAmt, accepted] = resolveOffer(price, item.market, rejectCount);
+
+  let stars;
+  if (!accepted) {
+    stars = rejectCount >= 1 ? 1 : randInt(1, 3);
+  } else if (rejectCount >= 2) {
+    stars = randInt(1, 3);
+  } else if (rejectCount === 1) {
+    stars = randInt(3, 4);
+  } else {
+    stars = randInt(4, 5);
+  }
+
+  const review = stars <= 3
+    ? REVIEWS_BAD[randInt(0, REVIEWS_BAD.length - 1)]
+    : REVIEWS_GOOD[randInt(0, REVIEWS_GOOD.length - 1)];
+  const buyer = BUYER_NAMES[randInt(0, BUYER_NAMES.length - 1)];
+
+  item.offer = { buyer, amount: offerAmt, accepted, review, stars, forced_low: rejectCount >= 2 };
+  render();
+}
+
+function acceptOffer(inv_id) {
+  const item = state.inventory.find(i => i.inv_id === inv_id);
+  if (!item || !item.offer || !item.offer.accepted) return;
+  state.cash += item.offer.amount;
+  state.cash = Math.round(state.cash);
+  const soldItem = { ...item, status: 'sold', sale_price: item.offer.amount };
+  state.sold.push(soldItem);
+  state.inventory = state.inventory.filter(i => i.inv_id !== inv_id);
+  render();
+  showTab('sold', document.querySelectorAll('nav button')[2]);
+}
+
+function declineOffer(inv_id) {
+  const item = state.inventory.find(i => i.inv_id === inv_id);
+  if (!item) return;
+  item.reject_count = (item.reject_count || 0) + 1;
+  item.status = 'in_inventory';
+  item.offer = null;
+  render();
+}
+
+function nextCycle() {
+  if (state.cycle >= state.max_cycles) {
+    // Force sell unsold inventory at 50% market
+    state.inventory.forEach(item => {
+      const salePrice = Math.round(item.market * 0.5);
+      state.cash += salePrice;
+      state.sold.push({ ...item, status: 'sold', sale_price: salePrice,
+        offer: { buyer: 'EndOfGame_Clearance', amount: salePrice, accepted: true,
+          review: 'Bought it at clearance pricing. Better than nothing, I guess.', stars: 2, forced_low: true }
+      });
+    });
+    state.cash = Math.round(state.cash);
+    state.inventory = [];
+    state.game_over = true;
+  } else {
+    state.cycle += 1;
+    state.marketplace = buildCycleListings();
+  }
+  render();
+  if (!state.game_over) showTab('shop', document.querySelectorAll('nav button')[0]);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
 function render() {
   if (!state) return;
 
-  // Cash
-  document.getElementById('cash-display').textContent = '$' + state.cash.toFixed(0);
+  document.getElementById('cash-display').textContent = '$' + state.cash;
 
-  // Cycle dots
   const dots = document.getElementById('cycle-dots');
   dots.innerHTML = '';
   for (let i = 1; i <= state.max_cycles; i++) {
@@ -443,13 +721,12 @@ function render() {
   }
   document.getElementById('cycle-num').textContent = state.cycle;
 
-  // Game over
   if (state.game_over) {
     document.getElementById('game-over-screen').classList.add('show');
-    document.getElementById('final-cash').textContent = '$' + state.cash.toFixed(0);
+    document.getElementById('final-cash').textContent = '$' + state.cash;
     const profit = state.cash - 100;
     const el = document.getElementById('final-profit');
-    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toFixed(0) + ' from your $100 start';
+    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit + ' from your $100 start';
     el.className = 'final-profit ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
     showGameOver(state.cash);
     return;
@@ -468,20 +745,18 @@ function renderShop() {
     el.innerHTML = '<div class="empty">Nothing in your budget this week.<br>Hit Next Week to continue.</div>';
     return;
   }
-  el.innerHTML = items.map(item => {
-    return `
-      <div class="item-card">
-        <div class="item-top">
-          <div class="item-emoji">${item.emoji}</div>
-          <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-price">$${item.price.toFixed(0)}</div>
-          </div>
+  el.innerHTML = items.map(item => `
+    <div class="item-card">
+      <div class="item-top">
+        <div class="item-emoji">${item.emoji}</div>
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-price">$${item.price}</div>
         </div>
-        ${item.desc ? `<div style="font-size:12px;color:#555;margin:4px 0 8px;line-height:1.4">${item.desc}</div>` : ''}
-        <button class="btn btn-buy" onclick="buyItem('${item.listing_id}')">Buy Now</button>
-      </div>`;
-  }).join('');
+      </div>
+      ${item.desc ? `<div style="font-size:12px;color:#555;margin:4px 0 8px;line-height:1.4">${item.desc}</div>` : ''}
+      <button class="btn btn-buy" onclick="buyItem('${item.listing_id}')">Buy Now</button>
+    </div>`).join('');
 }
 
 function renderInventory() {
@@ -491,10 +766,8 @@ function renderInventory() {
     el.innerHTML = '<div class="empty">Your inventory is empty.<br>Go buy something!</div>';
     return;
   }
-
   el.innerHTML = items.map(item => {
-    let statusHtml = '';
-    let actionHtml = '';
+    let statusHtml = '', actionHtml = '';
 
     if (item.status === 'in_inventory') {
       statusHtml = '<span class="inv-status status-inventory">In Inventory</span>';
@@ -503,12 +776,10 @@ function renderInventory() {
         : '';
       actionHtml = `
         <div class="price-row">
-          <input type="number" id="price-${item.inv_id}" placeholder="Your price"
-            min="1" step="1">
-          <button class="btn btn-sell" style="width:auto;padding:9px 14px"
-            onclick="listItem('${item.inv_id}')">List</button>
+          <input type="number" id="price-${item.inv_id}" placeholder="Your price" min="1" step="1">
+          <button class="btn btn-sell" style="width:auto;padding:9px 14px" onclick="listItem('${item.inv_id}')">List</button>
         </div>
-        <div class="market-hint" style="margin-top:4px">Paid $${item.paid.toFixed(0)}</div>
+        <div class="market-hint" style="margin-top:4px">Paid $${item.paid}</div>
         ${rejectWarning}`;
     }
 
@@ -518,7 +789,7 @@ function renderInventory() {
         actionHtml = `
           <div class="offer-box">
             <div class="offer-buyer">👤 ${item.offer.buyer}</div>
-            <div class="offer-amount">Offers $${item.offer.amount.toFixed(0)}</div>
+            <div class="offer-amount">Offers $${item.offer.amount}</div>
             <button class="btn btn-accept" onclick="acceptOffer('${item.inv_id}')">Accept Offer</button>
             <button class="btn btn-decline" onclick="declineOffer('${item.inv_id}')">Decline</button>
           </div>`;
@@ -544,7 +815,7 @@ function renderInventory() {
           <div class="item-info">
             ${statusHtml}
             <div class="item-name">${item.name}</div>
-            <div class="item-meta">Paid $${item.paid.toFixed(0)}</div>
+            <div class="item-meta">Paid $${item.paid}</div>
           </div>
         </div>
         ${actionHtml}
@@ -567,9 +838,9 @@ function renderSold() {
         <div class="sold-info">
           <div class="sold-name">${item.name}</div>
           <div style="font-size:13px">
-            Sold for <strong>$${item.sale_price.toFixed(0)}</strong>
+            Sold for <strong>$${item.sale_price}</strong>
             <span class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">
-              (${profit >= 0 ? '+' : ''}$${profit.toFixed(0)})
+              (${profit >= 0 ? '+' : ''}$${profit})
             </span>
           </div>
           <div style="font-size:12px;color:#555;margin-top:2px">${stars} ${item.offer.buyer}</div>
@@ -592,36 +863,6 @@ function updateInventoryBadge() {
   }
 }
 
-async function buyItem(listing_id) {
-  state = await api('/api/buy', 'POST', { listing_id });
-  render();
-}
-
-async function listItem(inv_id) {
-  const input = document.getElementById('price-' + inv_id);
-  const price = parseFloat(input.value);
-  if (!price || price <= 0) return;
-  state = await api('/api/list-item', 'POST', { inv_id, price });
-  render();
-}
-
-async function acceptOffer(inv_id) {
-  state = await api('/api/accept-offer', 'POST', { inv_id });
-  render();
-  showTab('sold', document.querySelectorAll('nav button')[2]);
-}
-
-async function declineOffer(inv_id) {
-  state = await api('/api/decline-offer', 'POST', { inv_id });
-  render();
-}
-
-async function nextCycle() {
-  state = await api('/api/next-cycle', 'POST');
-  render();
-  showTab('shop', document.querySelectorAll('nav button')[0]);
-}
-
 function showTab(name, btn) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -629,35 +870,40 @@ function showTab(name, btn) {
   btn.classList.add('active');
 }
 
+// ── Game over / leaderboard ───────────────────────────────────────────────
 let finalScore = 0;
 let finalAvgStars = 0;
 
-async function showGameOver(cash) {
+function showGameOver(cash) {
   finalScore = cash;
   const soldWithStars = state.sold.filter(i => i.offer && i.offer.stars);
   finalAvgStars = soldWithStars.length
     ? Math.round(soldWithStars.reduce((sum, i) => sum + i.offer.stars, 0) / soldWithStars.length * 10) / 10
     : 0;
-  const scores = await api('/api/scores');
+
+  const scores = loadScores();
   renderLeaderboard(scores, null);
-  const q = await api('/api/qualifies', 'POST', { score: cash });
-  if (q.qualifies) {
+
+  if (qualifiesForLeaderboard(cash)) {
     document.getElementById('name-entry-wrap').style.display = 'block';
+  } else {
+    document.getElementById('name-entry-wrap').style.display = 'none';
   }
 }
 
 function renderLeaderboard(scores, highlightName) {
+  const sorted = scores.slice().sort((a, b) => b.score - a.score).slice(0, 10);
   const el = document.getElementById('leaderboard-rows');
-  if (!scores.length) {
+  if (!sorted.length) {
     el.innerHTML = '<div class="lb-row" style="color:#aaa;font-size:13px">No scores yet — be the first!</div>';
     return;
   }
-  el.innerHTML = scores.map((s, i) => {
+  el.innerHTML = sorted.map((s, i) => {
     const isYou = highlightName && s.name === highlightName && s.score === finalScore;
     const starsDisplay = s.avg_stars ? `⭐ ${s.avg_stars.toFixed(1)}` : '';
     return `
       <div class="lb-row ${isYou ? 'lb-you' : ''}">
-        <span class="lb-rank ${i < 3 ? 'top3' : ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1)}</span>
+        <span class="lb-rank ${i < 3 ? 'top3' : ''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)}</span>
         <span class="lb-name">${s.name}${isYou ? ' 👈 you' : ''}</span>
         ${starsDisplay ? `<span class="lb-stars">${starsDisplay}</span>` : ''}
         <span class="lb-score">$${s.score}</span>
@@ -665,11 +911,15 @@ function renderLeaderboard(scores, highlightName) {
   }).join('');
 }
 
-async function submitScore() {
+function submitScore() {
   const name = document.getElementById('player-name').value.trim();
   if (!name) return;
   document.getElementById('name-entry-wrap').style.display = 'none';
-  const scores = await api('/api/submit-score', 'POST', { name, score: finalScore, avg_stars: finalAvgStars });
+  const scores = loadScores();
+  scores.push({ name, score: finalScore, avg_stars: finalAvgStars });
+  scores.sort((a, b) => b.score - a.score);
+  if (scores.length > 10) scores.splice(10);
+  saveScores(scores);
   renderLeaderboard(scores, name);
 }
 
