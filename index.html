@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>BVMarketplace</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f2f2;
+    color: #111;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding-bottom: calc(130px + env(safe-area-inset-bottom));
+  }
+
+  /* ── Header ── */
+  header {
+    background: #131921;
+    color: white;
+    padding: 10px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: #ff9900; }
+  .cash-badge {
+    background: #ff9900;
+    color: #111;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .cycle-bar {
+    font-size: 12px;
+    color: #aaa;
+  }
+  .cycle-dots { display: inline-flex; gap: 5px; margin-left: 6px; }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #444;
+    display: inline-block;
+  }
+  .dot.active { background: #ff9900; }
+  .dot.done { background: #888; }
+
+  /* ── Tabs ── */
+  nav {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #131921;
+    display: flex;
+    border-top: 1px solid #333;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 11px;
+    padding: 10px 4px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  nav button.active { color: #ff9900; }
+  nav button .tab-icon { font-size: 20px; }
+  .badge {
+    background: #e63946;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 5px;
+    position: absolute;
+    top: 6px;
+    margin-left: 14px;
+  }
+  nav button { position: relative; }
+
+  /* ── Sections ── */
+  section { display: none; padding: 10px; }
+  section.active { display: block; }
+
+  /* ── Item cards ── */
+  .item-card {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .item-card .item-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .item-emoji {
+    font-size: 42px;
+    line-height: 1;
+    min-width: 50px;
+    text-align: center;
+  }
+  .item-info { flex: 1; }
+  .item-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .item-meta { font-size: 12px; color: #555; margin-top: 3px; }
+  .item-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #b12704;
+    margin-top: 4px;
+  }
+  .market-hint { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .deal-tag {
+    background: #e63946;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 9px 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .btn-buy { background: #ff9900; color: #111; }
+  .btn-buy:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+  .btn-sell { background: #007600; color: white; }
+  .btn-secondary { background: #e7e9ec; color: #111; }
+  .btn-accept { background: #007600; color: white; }
+  .btn-decline { background: #e7e9ec; color: #111; margin-top: 6px; }
+  .btn-next { background: #131921; color: #ff9900; font-size: 16px; }
+
+  /* ── Price input ── */
+  .price-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .price-row input {
+    flex: 1;
+    font-size: 16px;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    -webkit-appearance: none;
+  }
+  .price-row button { flex: 0 0 auto; width: auto; margin-top: 0; }
+
+  /* ── Offer box ── */
+  .offer-box {
+    background: #f0f7f0;
+    border: 1px solid #a5d6a7;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .offer-box.rejected {
+    background: #fff3f3;
+    border-color: #ffb3b3;
+  }
+  .offer-buyer { font-weight: 700; font-size: 14px; }
+  .offer-amount { font-size: 18px; font-weight: 700; color: #007600; margin: 4px 0; }
+  .offer-amount.rejected { color: #b12704; }
+
+  /* ── Stars ── */
+  .stars { color: #ff9900; font-size: 14px; }
+
+  /* ── Inventory ── */
+  .inv-status {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .status-inventory { background: #e7e9ec; color: #555; }
+  .status-listed { background: #fff3cd; color: #856404; }
+  .status-sold { background: #d4edda; color: #155724; }
+
+  .profit-positive { color: #007600; font-weight: 700; }
+  .profit-negative { color: #b12704; font-weight: 700; }
+
+  /* ── Sold feed ── */
+  .sold-item {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .sold-emoji { font-size: 28px; }
+  .sold-info { flex: 1; font-size: 13px; }
+  .sold-name { font-weight: 600; }
+  .sold-review { color: #555; font-size: 12px; margin-top: 2px; font-style: italic; }
+
+  /* ── Game over ── */
+  #game-over-screen {
+    display: none;
+    position: fixed;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    background: #f0f2f2;
+    overflow-y: auto;
+    z-index: 200;
+    padding: 30px 16px 100px;
+  }
+  #game-over-screen.show { display: block; }
+  .final-amount {
+    font-size: 52px;
+    font-weight: 800;
+    color: #ff9900;
+    margin: 10px 0 6px;
+    text-align: center;
+  }
+  .final-label { font-size: 18px; color: #555; text-align: center; }
+  .final-profit { font-size: 20px; font-weight: 700; margin-top: 6px; text-align: center; }
+
+  /* ── Leaderboard ── */
+  .leaderboard {
+    background: white;
+    border-radius: 10px;
+    margin: 20px 0 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .leaderboard-title {
+    background: #131921;
+    color: #ff9900;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    padding: 9px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    gap: 10px;
+  }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { font-weight: 700; color: #888; min-width: 22px; }
+  .lb-rank.top3 { color: #ff9900; }
+  .lb-name { flex: 1; font-weight: 500; }
+  .lb-score { font-weight: 700; color: #007600; }
+  .lb-stars { font-size: 12px; color: #ff9900; white-space: nowrap; }
+  .lb-you { background: #fffbe6; }
+
+  .name-entry {
+    background: white;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .name-entry p { font-size: 14px; color: #555; margin-bottom: 10px; }
+  .name-row { display: flex; gap: 8px; }
+  .name-row input {
+    flex: 1; font-size: 16px; padding: 9px 10px;
+    border: 1px solid #ccc; border-radius: 6px;
+    -webkit-appearance: none;
+  }
+  .name-row button { flex: 0 0 auto; width: auto; margin-top: 0; padding: 9px 16px; }
+
+  /* ── Next cycle sticky bar ── */
+  .next-cycle-sticky {
+    position: fixed;
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    padding: 8px 12px;
+    background: #f0f2f2;
+    border-top: 1px solid #ddd;
+    z-index: 99;
+  }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; color: #888; padding: 40px 20px; font-size: 15px; }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">BV<span>Marketplace</span></div>
+    <div class="cash-badge" id="cash-display">$100.00</div>
+  </div>
+  <div class="cycle-bar">
+    Week <span id="cycle-num">1</span> of 4
+    <span class="cycle-dots" id="cycle-dots"></span>
+  </div>
+  <div style="font-size:11px;color:#aaa;padding:2px 14px 2px;letter-spacing:0.2px">Make the most $ buying and selling on marketplace in 4 weeks</div>
+  <div style="font-size:11px;color:#aaa;padding:0 14px 6px;letter-spacing:0.2px">Click through the weeks, but make sure you sell before the end of week 4</div>
+</header>
+
+<!-- ── SHOP TAB ── -->
+<section id="tab-shop" class="active">
+  <div id="marketplace-items"></div>
+</section>
+
+<!-- ── INVENTORY TAB ── -->
+<section id="tab-inventory">
+  <div id="inventory-items"></div>
+</section>
+
+<!-- ── SOLD TAB ── -->
+<section id="tab-sold">
+  <div id="sold-items"></div>
+</section>
+
+<!-- ── GAME OVER ── -->
+<div id="game-over-screen">
+  <div style="font-size:48px;text-align:center">🏆</div>
+  <div class="final-label">Final Balance</div>
+  <div class="final-amount" id="final-cash"></div>
+  <div class="final-profit" id="final-profit"></div>
+
+  <div id="name-entry-wrap" style="display:none" class="name-entry">
+    <p>You made the top 10! Enter your name for the leaderboard:</p>
+    <div class="name-row">
+      <input type="text" id="player-name" placeholder="Your name" maxlength="20">
+      <button class="btn btn-buy" onclick="submitScore()">Submit</button>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <div class="leaderboard-title">🏅 Top 10 Scores</div>
+    <div id="leaderboard-rows"><div class="lb-row" style="color:#aaa;font-size:13px">Loading...</div></div>
+  </div>
+
+  <button class="btn btn-buy" style="display:block;max-width:240px;margin:0 auto" onclick="startGame()">Play Again</button>
+</div>
+
+<!-- ── NEXT CYCLE STICKY ── -->
+<div class="next-cycle-sticky">
+  <button class="btn btn-next" id="next-cycle-btn" onclick="nextCycle()">Next Week →</button>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav>
+  <button class="active" onclick="showTab('shop', this)">
+    <span class="tab-icon">🛒</span>Shop
+  </button>
+  <button onclick="showTab('inventory', this)" id="nav-inventory">
+    <span class="tab-icon">📦</span>Inventory
+  </button>
+  <button onclick="showTab('sold', this)">
+    <span class="tab-icon">✅</span>Sold
+  </button>
+</nav>
+
+<script>
+let state = null;
+
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+async function startGame() {
+  state = await api('/api/new-game', 'POST');
+  document.getElementById('game-over-screen').classList.remove('show');
+  document.querySelector('body').style.display = '';
+  showTab('shop', document.querySelector('nav button'));
+  render();
+}
+
+function render() {
+  if (!state) return;
+
+  // Cash
+  document.getElementById('cash-display').textContent = '$' + state.cash.toFixed(0);
+
+  // Cycle dots
+  const dots = document.getElementById('cycle-dots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= state.max_cycles; i++) {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i < state.cycle ? ' done' : i === state.cycle ? ' active' : '');
+    dots.appendChild(d);
+  }
+  document.getElementById('cycle-num').textContent = state.cycle;
+
+  // Game over
+  if (state.game_over) {
+    document.getElementById('game-over-screen').classList.add('show');
+    document.getElementById('final-cash').textContent = '$' + state.cash.toFixed(0);
+    const profit = state.cash - 100;
+    const el = document.getElementById('final-profit');
+    el.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toFixed(0) + ' from your $100 start';
+    el.className = 'final-profit ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
+    showGameOver(state.cash);
+    return;
+  }
+
+  renderShop();
+  renderInventory();
+  renderSold();
+  updateInventoryBadge();
+}
+
+function renderShop() {
+  const el = document.getElementById('marketplace-items');
+  const items = state.marketplace.filter(item => item.price <= state.cash);
+  if (items.length === 0) {
+    el.innerHTML = '<div class="empty">Nothing in your budget this week.<br>Hit Next Week to continue.</div>';
+    return;
+  }
+  el.innerHTML = items.map(item => {
+    return `
+      <div class="item-card">
+        <div class="item-top">
+          <div class="item-emoji">${item.emoji}</div>
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">$${item.price.toFixed(0)}</div>
+          </div>
+        </div>
+        ${item.desc ? `<div style="font-size:12px;color:#555;margin:4px 0 8px;line-height:1.4">${item.desc}</div>` : ''}
+        <button class="btn btn-buy" onclick="buyItem('${item.listing_id}')">Buy Now</button>
+      </div>`;
+  }).join('');
+}
+
+function renderInventory() {
+  const el = document.getElementById('inventory-items');
+  const items = state.inventory;
+  if (items.length === 0) {
+    el.innerHTML = '<div class="empty">Your inventory is empty.<br>Go buy something!</div>';
+    return;
+  }
+
+  el.innerHTML = items.map(item => {
+    let statusHtml = '';
+    let actionHtml = '';
+
+    if (item.status === 'in_inventory') {
+      statusHtml = '<span class="inv-status status-inventory">In Inventory</span>';
+      const rejectWarning = item.reject_count >= 2
+        ? `<div style="color:#b12704;font-size:12px;margin-top:4px">⚠️ Buyers will no longer accept offers above your purchase price</div>`
+        : '';
+      actionHtml = `
+        <div class="price-row">
+          <input type="number" id="price-${item.inv_id}" placeholder="Your price"
+            min="1" step="1">
+          <button class="btn btn-sell" style="width:auto;padding:9px 14px"
+            onclick="listItem('${item.inv_id}')">List</button>
+        </div>
+        <div class="market-hint" style="margin-top:4px">Paid $${item.paid.toFixed(0)}</div>
+        ${rejectWarning}`;
+    }
+
+    if (item.status === 'listed' && item.offer) {
+      statusHtml = '<span class="inv-status status-listed">Awaiting Offer</span>';
+      if (item.offer.accepted) {
+        actionHtml = `
+          <div class="offer-box">
+            <div class="offer-buyer">👤 ${item.offer.buyer}</div>
+            <div class="offer-amount">Offers $${item.offer.amount.toFixed(0)}</div>
+            <button class="btn btn-accept" onclick="acceptOffer('${item.inv_id}')">Accept Offer</button>
+            <button class="btn btn-decline" onclick="declineOffer('${item.inv_id}')">Decline</button>
+          </div>`;
+      } else {
+        const timesRejected = (item.reject_count || 0) + 1;
+        const warning = timesRejected >= 2
+          ? `<div style="color:#b12704;font-size:12px;margin-top:6px">⚠️ Buyers will no longer accept offers above your purchase price</div>`
+          : '';
+        actionHtml = `
+          <div class="offer-box rejected">
+            <div class="offer-buyer">👤 ${item.offer.buyer} viewed your listing</div>
+            <div class="offer-amount rejected">No offer — price too high</div>
+            ${warning}
+            <button class="btn btn-secondary" style="margin-top:8px" onclick="declineOffer('${item.inv_id}')">Re-list at a lower price</button>
+          </div>`;
+      }
+    }
+
+    return `
+      <div class="item-card">
+        <div class="item-top">
+          <div class="item-emoji">${item.emoji}</div>
+          <div class="item-info">
+            ${statusHtml}
+            <div class="item-name">${item.name}</div>
+            <div class="item-meta">Paid $${item.paid.toFixed(0)}</div>
+          </div>
+        </div>
+        ${actionHtml}
+      </div>`;
+  }).join('');
+}
+
+function renderSold() {
+  const el = document.getElementById('sold-items');
+  if (state.sold.length === 0) {
+    el.innerHTML = '<div class="empty">No sales yet!</div>';
+    return;
+  }
+  el.innerHTML = state.sold.slice().reverse().map(item => {
+    const profit = item.sale_price - item.paid;
+    const stars = '⭐'.repeat(item.offer.stars);
+    return `
+      <div class="sold-item">
+        <div class="sold-emoji">${item.emoji}</div>
+        <div class="sold-info">
+          <div class="sold-name">${item.name}</div>
+          <div style="font-size:13px">
+            Sold for <strong>$${item.sale_price.toFixed(0)}</strong>
+            <span class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">
+              (${profit >= 0 ? '+' : ''}$${profit.toFixed(0)})
+            </span>
+          </div>
+          <div style="font-size:12px;color:#555;margin-top:2px">${stars} ${item.offer.buyer}</div>
+          <div class="sold-review">"${item.offer.review}"</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateInventoryBadge() {
+  const btn = document.getElementById('nav-inventory');
+  const count = state.inventory.filter(i => i.status === 'in_inventory').length;
+  const existing = btn.querySelector('.badge');
+  if (existing) existing.remove();
+  if (count > 0) {
+    const b = document.createElement('span');
+    b.className = 'badge';
+    b.textContent = count;
+    btn.appendChild(b);
+  }
+}
+
+async function buyItem(listing_id) {
+  state = await api('/api/buy', 'POST', { listing_id });
+  render();
+}
+
+async function listItem(inv_id) {
+  const input = document.getElementById('price-' + inv_id);
+  const price = parseFloat(input.value);
+  if (!price || price <= 0) return;
+  state = await api('/api/list-item', 'POST', { inv_id, price });
+  render();
+}
+
+async function acceptOffer(inv_id) {
+  state = await api('/api/accept-offer', 'POST', { inv_id });
+  render();
+  showTab('sold', document.querySelectorAll('nav button')[2]);
+}
+
+async function declineOffer(inv_id) {
+  state = await api('/api/decline-offer', 'POST', { inv_id });
+  render();
+}
+
+async function nextCycle() {
+  state = await api('/api/next-cycle', 'POST');
+  render();
+  showTab('shop', document.querySelectorAll('nav button')[0]);
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+let finalScore = 0;
+let finalAvgStars = 0;
+
+async function showGameOver(cash) {
+  finalScore = cash;
+  const soldWithStars = state.sold.filter(i => i.offer && i.offer.stars);
+  finalAvgStars = soldWithStars.length
+    ? Math.round(soldWithStars.reduce((sum, i) => sum + i.offer.stars, 0) / soldWithStars.length * 10) / 10
+    : 0;
+  const scores = await api('/api/scores');
+  renderLeaderboard(scores, null);
+  const q = await api('/api/qualifies', 'POST', { score: cash });
+  if (q.qualifies) {
+    document.getElementById('name-entry-wrap').style.display = 'block';
+  }
+}
+
+function renderLeaderboard(scores, highlightName) {
+  const el = document.getElementById('leaderboard-rows');
+  if (!scores.length) {
+    el.innerHTML = '<div class="lb-row" style="color:#aaa;font-size:13px">No scores yet — be the first!</div>';
+    return;
+  }
+  el.innerHTML = scores.map((s, i) => {
+    const isYou = highlightName && s.name === highlightName && s.score === finalScore;
+    const starsDisplay = s.avg_stars ? `⭐ ${s.avg_stars.toFixed(1)}` : '';
+    return `
+      <div class="lb-row ${isYou ? 'lb-you' : ''}">
+        <span class="lb-rank ${i < 3 ? 'top3' : ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1)}</span>
+        <span class="lb-name">${s.name}${isYou ? ' 👈 you' : ''}</span>
+        ${starsDisplay ? `<span class="lb-stars">${starsDisplay}</span>` : ''}
+        <span class="lb-score">$${s.score}</span>
+      </div>`;
+  }).join('');
+}
+
+async function submitScore() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) return;
+  document.getElementById('name-entry-wrap').style.display = 'none';
+  const scores = await api('/api/submit-score', 'POST', { name, score: finalScore, avg_stars: finalAvgStars });
+  renderLeaderboard(scores, name);
+}
+
+// Start
+startGame();
+</script>
+</body>
+</html>
